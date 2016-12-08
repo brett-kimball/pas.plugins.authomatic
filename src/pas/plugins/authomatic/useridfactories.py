@@ -13,6 +13,7 @@ class BaseUserIDFactory(object):
     def normalize(self, plugin, result, userid):
         new_userid = userid
         # FIXME - test the behavior with the counter removed
+        # would be nice to make this dependent on the chosen factory
         #counter = 2  # first was taken, so logically its second
         #while new_userid in plugin._useridentities_by_userid:
         #    new_userid = '{0}_{1}'.format(userid, counter)
@@ -43,12 +44,19 @@ class ProviderIDUserNameFactory(BaseUserIDFactory):
     def __call__(self, plugin, result):
         return self.normalize(plugin, result, result.user.username)
 
+class ProviderIDUserEmailFactory(BaseUserIDFactory):
+
+    # use this in conjunction with security->use email address as login name?
+    title = _(u'Provider E-Mail')
+
+    def __call__(self, plugin, result):
+        return self.normalize(plugin, result, result.user.email)
 
 def new_userid(plugin, result):
     settings = authomatic_settings()
     factory = queryUtility(
         IUserIDFactory,
         name=settings.userid_factory_name,
-        default=UUID4UserIDFactory()
+        default=ProviderIDUserEmailFactory()
     )
     return factory(plugin, result)
